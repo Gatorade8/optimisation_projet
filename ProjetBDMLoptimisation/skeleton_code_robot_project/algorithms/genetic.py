@@ -67,8 +67,6 @@ def selection_tournoi(population, scores):
 
 def croisement(parent1, parent2):
     # croisement en un point: on coupe les deux parents et on melange les moities
-    if len(parent1) != len(parent2):
-        return parent1[:]
     point = random.randint(1, len(parent1) - 1)
     enfant = parent1[:point] + parent2[point:]
     return enfant

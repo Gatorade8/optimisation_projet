@@ -23,7 +23,7 @@ def get_neighbors(grid, pos):
     # on se deplace seulement en haut, bas, gauche, droite (pas en diagonal)
     x, y = pos
     rows = len(grid)
-    cols = len(grid[0]) if rows > 0 else 0
+    cols = len(grid[0])
 
     # les 4 direction possibles: droite, gauche, bas, haut
     directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]

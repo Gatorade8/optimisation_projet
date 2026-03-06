@@ -90,10 +90,6 @@ def main():
         if f.endswith(".txt")
     ])
 
-    if not fichiers:
-        print(f"Aucun fichier .txt trouve dans: {grids_path}")
-        return
-
     for fichier in fichiers:
         traiter_grille(fichier)
 
