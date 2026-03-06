@@ -1,8 +1,12 @@
 
 import time
 import os
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.gridspec as gridspec
+import numpy as np
 
-from grid import load_grid, get_neighbors
+from grid import load_grid
 from algorithms.greedy import greedy_search
 from algorithms.astar import astar_search
 from algorithms.genetic import genetic_search
@@ -11,78 +15,135 @@ from algorithms.genetic import genetic_search
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 GRIDS_DIR = os.path.join(BASE_DIR, "..", "grid_datasets")
 
+# couleurs utilisees pour chaque type de case
+COULEURS = {
+    "0": "#1e2a3a",   # case libre: bleu fonce
+    "X": "#c0392b",   # obstacle: rouge
+    "S": "#2ecc71",   # depart: vert
+    "G": "#f39c12",   # but: orange
+    "chemin": "#3498db",  # chemin trouve: bleu clair
+}
 
-def afficher_grille_avec_chemin(grid, path, nom_algo):
-    # affiche la grille dans le terminal avec le chemin marque par des points
-    print(f"\n--- Grille: {nom_algo} ---")
+ALGOS = [
+    ("Glouton",  greedy_search),
+    ("A*",       astar_search),
+    ("Genetique", genetic_search),
+]
+
+
+def afficher_grille_matplotlib(grid, path, ax, titre):
+    # affiche la grille dans un subplot matplotlib avec le chemin colore
+    rows = len(grid)
+    cols = len(grid[0])
     path_set = set(path)
+
+    # construction de la matrice de couleurs
+    image = np.zeros((rows, cols, 3))
     for y, row in enumerate(grid):
-        ligne = ""
         for x, val in enumerate(row):
             if (x, y) in path_set and val not in ("S", "G"):
-                ligne += ". "
+                hex_c = COULEURS["chemin"]
             else:
-                ligne += val + " "
-        print(ligne)
-    print()
+                hex_c = COULEURS[val]
+            # conversion hex -> rgb normalise entre 0 et 1
+            r = int(hex_c[1:3], 16) / 255
+            g = int(hex_c[3:5], 16) / 255
+            b = int(hex_c[5:7], 16) / 255
+            image[y, x] = [r, g, b]
+
+    ax.imshow(image, aspect="equal", interpolation="nearest")
+
+    # quadrillage entre les cases
+    ax.set_xticks(np.arange(-0.5, cols, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, rows, 1), minor=True)
+    ax.grid(which="minor", color="#ffffff", linewidth=0.8)
+    ax.tick_params(which="both", bottom=False, left=False,
+                   labelbottom=False, labelleft=False)
+
+    longueur = len(path) if path else 0
+    ax.set_title(f"{titre}  (longueur: {longueur})", fontsize=10,
+                 color="white", pad=6)
+    ax.set_facecolor("#0f1923")
 
 
 def comparer_algos(grid, start, goal):
-    # compare les 3 algorithmes et affiche un tableau de resultats
-
+    # execute les 3 algos et retourne les resultats
     resultats = []
-
-    # algo glouton
-    debut = time.perf_counter()
-    path_greedy = greedy_search(grid, start, goal)
-    temps_greedy = time.perf_counter() - debut
-    resultats.append(("Glouton", path_greedy, temps_greedy))
-
-    # algo A*
-    debut = time.perf_counter()
-    path_astar = astar_search(grid, start, goal)
-    temps_astar = time.perf_counter() - debut
-    resultats.append(("A*", path_astar, temps_astar))
-
-    # algo genetique
-    debut = time.perf_counter()
-    path_genetic = genetic_search(grid, start, goal)
-    temps_genetic = time.perf_counter() - debut
-    resultats.append(("Genetique", path_genetic, temps_genetic))
-
+    for nom, fn in ALGOS:
+        debut = time.perf_counter()
+        path = fn(grid, start, goal)
+        temps = time.perf_counter() - debut
+        resultats.append((nom, path, temps))
     return resultats
 
 
-def traiter_grille(fichier):
-    print(f"\n{'='*60}")
-    print(f"Grille: {os.path.basename(fichier)}")
-    print(f"{'='*60}")
-
+def visualiser_fichier(fichier):
+    # charge la grille, lance les algos et affiche tout dans une figure
     grid, start, goal = load_grid(fichier)
-    print(f"Depart: {start}, But: {goal}")
-
-    # lancement de la comparaison
     resultats = comparer_algos(grid, start, goal)
 
-    # affichage des grilles avec les chemins trouves
-    for nom, path, _ in resultats:
-        if path:
-            afficher_grille_avec_chemin(grid, path, nom)
-        else:
-            print(f"\n[{nom}] Aucun chemin trouve")
+    # 3 grilles en haut + 1 tableau en bas
+    fig = plt.figure(figsize=(14, 7), facecolor="#0f1923")
+    fig.suptitle(
+        f"Comparaison des algorithmes - {os.path.basename(fichier)}",
+        fontsize=13, color="white", fontweight="bold", y=0.98
+    )
 
-    # tableau comparatif des resultats
-    print(f"\n{'Algorithme':<15} {'Longueur chemin':<18} {'Temps execution':<20} {'Chemin trouve ?'}")
-    print("-"*65)
+    gs = gridspec.GridSpec(2, 3, figure=fig,
+                           hspace=0.35, wspace=0.15,
+                           height_ratios=[2, 1])
 
-    for nom, path, temps in resultats:
-        longueur = len(path) if path else 0
-        trouve = "Oui" if path and path[-1] == goal else "Non"
-        print(f"{nom:<15} {longueur:<18} {temps:.6f}s{'':<12} {trouve}")
+    # affichage des 3 grilles
+    for i, (nom, path, _) in enumerate(resultats):
+        ax = fig.add_subplot(gs[0, i])
+        afficher_grille_matplotlib(grid, path, ax, nom)
+
+    # legende commune aux 3 grilles
+    patches = [
+        mpatches.Patch(color=COULEURS["S"],      label="Depart (S)"),
+        mpatches.Patch(color=COULEURS["G"],      label="But (G)"),
+        mpatches.Patch(color=COULEURS["chemin"], label="Chemin"),
+        mpatches.Patch(color=COULEURS["X"],      label="Obstacle (X)"),
+        mpatches.Patch(color=COULEURS["0"],      label="Case libre"),
+    ]
+    fig.legend(handles=patches, loc="upper right", fontsize=8,
+               facecolor="#1e2a3a", edgecolor="#ffffff",
+               labelcolor="white", ncol=1, framealpha=0.9)
+
+    # tableau comparatif dans la ligne du bas (3 colonnes fusionnees)
+    ax_table = fig.add_subplot(gs[1, :])
+    ax_table.axis("off")
+    ax_table.set_facecolor("#0f1923")
+
+    entetes = ["Algorithme", "Longueur chemin", "Temps execution", "Chemin trouve ?"]
+    donnees = [
+        [nom,
+         str(len(path)) if path else "0",
+         f"{temps:.6f}s",
+         "Oui" if path and path[-1] == goal else "Non"]
+        for nom, path, temps in resultats
+    ]
+
+    table = ax_table.table(
+        cellText=donnees,
+        colLabels=entetes,
+        loc="center",
+        cellLoc="center",
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 1.8)
+
+    # style du tableau
+    for (row, col), cell in table.get_celld().items():
+        cell.set_facecolor("#1e2a3a" if row > 0 else "#2c3e6b")
+        cell.set_text_props(color="white")
+        cell.set_edgecolor("#3d5a8a")
+
+    plt.show()
 
 
 def main():
-    # recupere toutes les grilles disponibles dans grid_datasets
     grids_path = os.path.normpath(GRIDS_DIR)
     fichiers = sorted([
         os.path.join(grids_path, f)
@@ -91,24 +152,7 @@ def main():
     ])
 
     for fichier in fichiers:
-        traiter_grille(fichier)
-
-    # questions d'analyse
-    print(f"\n\n{'='*60}")
-    print("--- Questions d'analyse ---")
-    print("1. Pourquoi le glouton ne garantit pas le chemin optimal ?")
-    print("   -> Il choisit toujours le voisin le plus proche du but (heuristique seule),")
-    print("      sans tenir compte du cout reel deja parcouru. Il peut tomber dans un")
-    print("      cul-de-sac ou prendre un chemin plus long.")
-    print()
-    print("2. Pourquoi A* est souvent plus performant pour trouver un chemin optimal ?")
-    print("   -> A* combine le cout reel g(n) et l'estimation h(n). Avec une heuristique")
-    print("      admissible (ne surestime jamais), il garantit le chemin le plus court.")
-    print()
-    print("3. Avantages et inconvenients d'un algo genetique ?")
-    print("   -> Avantages: explore beaucoup de chemins en parallele, fonctionne meme")
-    print("      sur des espaces difficiles. Inconvenients: non deterministe, n'est pas")
-    print("      garanti de trouver le chemin optimal, plus lent sur des petites grilles.")
+        visualiser_fichier(fichier)
 
 
 if __name__ == "__main__":
