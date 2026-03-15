@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Visualisation 3D interactive des algorithmes de pathfinding (Glouton, A*, Génétique) sur une grille voxel rétro Gameboy." />
+  <title>Robot Pathfinder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- Three.js 3D Canvas -->
+  <canvas id="canvas"></canvas>
+
+  <!-- CRT Scanline overlay -->
+  <div id="scanlines"></div>
+
+  <!-- UI Overlay -->
+  <div id="ui-overlay">
+    <!-- Title Bar -->
+    <div id="title-bar">
+      <span>ROBOT PATHFINDER</span>
+    </div>
+
+    <!-- Control Panel -->
+    <div id="controls">
+      <div class="control-group">
+        <label for="grid-select">GRILLE:</label>
+        <select id="grid-select">
+          <option value="">Chargement...</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>ALGORITHME:</label>
+        <div class="algo-buttons">
+          <button class="algo-btn" data-algo="greedy">GLOUTON</button>
+          <button class="algo-btn" data-algo="astar">A*</button>
+          <button class="algo-btn" data-algo="genetic">GENETIQUE</button>
+        </div>
+      </div>
+
+      <button id="run-all-btn">▶ COMPARER TOUS</button>
+    </div>
+
+    <!-- Results Panel -->
+    <div id="results" class="hidden">
+      <div class="result-title">━━ RESULTATS ━━</div>
+      <div id="results-list"></div>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+      <div class="legend-item"><span class="legend-color" style="background:#9bbc0f"></span> DEPART (S)</div>
+      <div class="legend-item"><span class="legend-color" style="background:#0f380f"></span> OBSTACLE (X)</div>
+      <div class="legend-item"><span class="legend-color" style="background:#8bac0f"></span> ARRIVEE (G)</div>
+      <div class="legend-item"><span class="legend-color" style="background:#306230"></span> CHEMIN</div>
+    </div>
+
+    <!-- Status -->
+    <div id="status-bar">
+      <span id="status-text">EN ATTENTE...</span>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
