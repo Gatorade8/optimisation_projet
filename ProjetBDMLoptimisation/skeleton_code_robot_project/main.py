@@ -140,7 +140,17 @@ def visualiser_fichier(fichier):
         cell.set_text_props(color="white")
         cell.set_edgecolor("#3d5a8a")
 
-    plt.show()
+    # affichage console pour verification rapide
+    print(f"\n--- Resultats pour {os.path.basename(fichier)} ---")
+    print(f"{'Algorithme':<12} | {'Longueur':<8} | {'Temps':<12} | {'Trouve ?':<8}")
+    print("-" * 50)
+    for nom, path, temps in resultats:
+        trouve = "Oui" if path and path[-1] == goal else "Non"
+        longueur = len(path) if path else 0
+        print(f"{nom:<12} | {longueur:<8} | {temps:.6f}s | {trouve:<8}")
+    print("-" * 50)
+
+    # plt.show()  # commente pour eviter les blocages en environnement sans affichage
 
 
 def main():

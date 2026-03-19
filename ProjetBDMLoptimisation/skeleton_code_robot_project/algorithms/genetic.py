@@ -13,7 +13,6 @@ MOVES = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 # parametres de l'algo genetique
 POPULATION_SIZE = 100
-CHROMOSOME_LENGTH = 40
 GENERATIONS = 200
 MUTATION_RATE = 0.05
 TOURNAMENT_SIZE = 5
@@ -82,11 +81,17 @@ def mutation(chromosome):
 
 def genetic_search(grid, start, goal):
     # algorithme genetique pour trouver un chemin dans la grille
-    # encode un chemin comme une sequence de mouvements (gènes)
+    # encode un chemin comme une sequence de mouvements (genes)
+
+    # on adapte la taille du chromosome en fonction de la taille de la grille
+    rows = len(grid)
+    cols = len(grid[0]) if rows > 0 else 0
+    # la longueur du chromosome depend de la taille de la grille (par ex. pour s'assurer d'avoir assez de mouvements)
+    chromosome_length = max(40, rows * cols)
 
     # initialisation de la population: chromosomes aleatoires
     population = [
-        [random.randint(0, 3) for _ in range(CHROMOSOME_LENGTH)]
+        [random.randint(0, 3) for _ in range(chromosome_length)]
         for _ in range(POPULATION_SIZE)
     ]
 
@@ -94,17 +99,26 @@ def genetic_search(grid, start, goal):
     best_score = float("-inf")
 
     for generation in range(GENERATIONS):
-        # calcule le score de chaque individu
-        scores = [fitness(grid, start, goal, chrom) for chrom in population]
-
-        # met a jour le meilleur chemin trouve jusqu'ici
-        gen_best_idx = max(range(len(scores)), key=lambda i: scores[i])
-        if scores[gen_best_idx] > best_score:
-            best_score = scores[gen_best_idx]
-            best_path = apply_moves(grid, start, goal, population[gen_best_idx])
-
-        # si on a trouve un chemin jusqu'au but on peut s'arreter
-        if best_path and best_path[-1] == goal:
+        scores = []
+        solution_trouvee = False
+        
+        # evaluation des chromosomes un par un
+        for chrom in population:
+            score = fitness(grid, start, goal, chrom)
+            scores.append(score)
+            
+            # met a jour le meilleur chemin trouve jusqu'ici
+            if score > best_score:
+                best_score = score
+                best_path = apply_moves(grid, start, goal, chrom)
+                
+            # s'arrete des qu'un chromosome a trouve la solution
+            if best_path and best_path[-1] == goal:
+                solution_trouvee = True
+                break
+                
+        # si on a trouve un chemin jusqu'au but on peut s'arreter (meme avant la fin de la generation)
+        if solution_trouvee:
             break
 
         # creation de la nouvelle generation
