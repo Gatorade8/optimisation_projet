@@ -12,11 +12,11 @@ from grid import get_neighbors
 MOVES = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 # parametres de l'algo genetique
-POPULATION_SIZE = 100
-CHROMOSOME_LENGTH = 40
-GENERATIONS = 200
+POPULATION_SIZE = 30
+CHROMOSOME_LENGTH = 20
+GENERATIONS = 4
 MUTATION_RATE = 0.05
-TOURNAMENT_SIZE = 5
+TOURNAMENT_SIZE = 3
 
 
 def apply_moves(grid, start, goal, chromosome):
