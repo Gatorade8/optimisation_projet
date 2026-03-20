@@ -4,36 +4,36 @@
 
 Un robot se deplace dans une ville representee sous forme de grille 2D. L'objectif est de trouver le meilleur chemin entre un point de depart (S) et une destination (G) en evitant les obstacles (X).
 
-Trois algorithmes sont implementes et compares :
-- **Algorithme glouton** : choisit a chaque etape le voisin le plus proche du but
-- **Algorithme A\*** : f(n) = g(n) + h(n), garantit le chemin optimal
-- **Algorithme genetique** : encode les chemins comme sequences de mouvements, evolue par selection/croisement/mutation
+Trois algorithmes sont implementes et compares dans une **interface web 3D (style Retro Gameboy)** :
+- **Algorithme glouton** : choisit a chaque etape le voisin le plus proche du but sans garantir l'optimalite
+- **Algorithme A\*** : f(n) = g(n) + h(n), garantit le chemin le plus court
+- **Algorithme genetique** : encode les chemins comme sequences de mouvements, evolue de facon non-deterministe par selection/croisement/mutation
 
 ## Structure du projet
 
 ```
 skeleton_code_robot_project/
-|-- main.py                    # point d'entree, comparison des algos
-|-- grid.py                    # chargement de la grille et fonction get_neighbors
+|-- api.py                     # Backend API FastAPI servant de moteur de resolution
+|-- main.py                    # Script de test original en ligne de commande
+|-- grid.py                    # utilitaire de lecture de grille
 |-- algorithms/
-|   |-- greedy.py              # algorithme glouton
-|   |-- astar.py               # algorithme A*
+|   |-- greedy.py              # algorithme de recherche gloutonne
+|   |-- astar.py               # algorithme de recherche A*
 |   |-- genetic.py             # algorithme genetique
-|-- data/
-    |-- grid1.txt              # grille de test 5x5
-    |-- grid2.txt              # grille de test 6x7 (labyrinthe)
+|-- data/ ou grid_datasets/    # dossier contenant les differentes cartes
+|-- frontend_3d/               # Application Web 3D Pixel Art
 ```
 
-## Format des grilles
+## Format des cartes
 
-Chaque cellule peut etre :
+Chaque carte (`.txt`) utilise le format suivant, delimite par des espaces :
 - `S` : point de depart du robot
 - `G` : destination a atteindre
 - `0` : case libre
 - `X` : obstacle (infranchissable)
 
-Exemple de grille (`data/grid1.txt`) :
-```
+Exemple (`grid1.txt`) :
+```text
 S 0 0 X 0
 0 X 0 X 0
 0 X 0 0 0
@@ -41,57 +41,39 @@ S 0 0 X 0
 0 0 0 X G
 ```
 
-## Comment executer le programme
+## Installation & Execution
 
-### Lancer la comparaison sur grid1.txt
+Ce projet fonctionne en deux parties : une **API Backend** qui resout le pathfinding, et une **UI Web** qui dessine le tout en 3D volumetrique.
 
-```bash
-py main.py
-```
+### 1. Demarrer le Serveur Backend (Python)
 
-ou si `python` est dans le PATH :
+Installez les dependances (FastAPI et Uvicorn) puis lancez le serveur :
 
 ```bash
-python main.py
+pip install -r requirements.txt
+python api.py
 ```
+*(L'API ecoutera sur le port 8000)*
 
-Le programme affiche :
-1. La grille avec le chemin marque par des points (`.`) pour chaque algorithme
-2. Un tableau comparatif avec la longueur du chemin et le temps d'execution
-3. Les reponses aux questions d'analyse
+### 2. Demarrer l'Interface Frontend (Node.js)
 
-### Changer de grille
+Ouvrez un deuxieme terminal :
 
-Dans `main.py`, modifier la ligne suivante pour utiliser une autre grille :
-```python
-fichier = "data/grid1.txt"  # changer par "data/grid2.txt" par exemple
+```bash
+cd frontend_3d
+npm install
+npm run dev
+# ou bien : npx vite
 ```
+*(L'interface web sera a disposition typiquement sur http://localhost:5173)*
 
-### Creer sa propre grille
+### 3. Utilisation
 
-Creer un fichier `.txt` dans `data/` avec les symboles `S`, `G`, `0`, `X` separes par des espaces. Exemple :
-```
-S 0 0
-0 X 0
-0 0 G
-```
+1. Ouvrez l'adresse de votre frontend dans votre navigateur web.
+2. Utilisez le menu deroulant en haut a gauche pour **selectionner la carte** a resoudre.
+3. Cliquez sur l'un des algorithmes pour animer sa recherche, ou ajustez les parametres du panneau **Reglages Genetique** si vous utilisez l'option *Genetique*.
+4. **Compare All** executera les trois algorithmes en arriere-plan et mettra en surbrillance l'algorithme vainqueur dans les resultats affiches en bas a gauche.
 
-## Resultats typiques (grid1.txt)
+### Creer de nouveaux niveaux
 
-| Algorithme | Longueur chemin | Temps execution | Chemin trouve ? |
-|------------|----------------|-----------------|-----------------|
-| Glouton    | 13             | ~0.0001s        | Oui             |
-| A*         | 9              | ~0.00004s       | Oui             |
-| Genetique  | variable       | ~0.002s         | Oui             |
-
-## Questions d'analyse
-
-1. **Pourquoi le glouton ne garantit pas le chemin optimal ?**
-   Il choisit toujours le voisin le plus proche du but sans tenir compte du cout deja parcouru, ce qui peut mener a des chemins plus longs.
-
-2. **Pourquoi A* est souvent plus performant ?**
-   A* combine le cout reel g(n) et l'heuristique h(n). Avec une heuristique admissible (distance de Manhattan), il garantit le chemin le plus court.
-
-3. **Avantages et inconvenients de l'algo genetique ?**
-   - Avantages : explore beaucoup de solutions en parallele, robuste sur des espaces complexes
-   - Inconvenients : non deterministe, ne garantit pas l'optimal, plus lent sur petites grilles
+Pour rajouter un niveau dans le frontend, il suffit tout simplement d'ajouter un fichier texte avec un quadrillage dans le dossier ou les cartes se trouvent (souvent `data/` ou `grid_datasets/`). Il apparaitra automatiquement dans le menu de selection du jeu !
