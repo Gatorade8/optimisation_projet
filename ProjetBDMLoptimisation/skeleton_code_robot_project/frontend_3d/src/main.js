@@ -252,7 +252,8 @@ function getGeneticParams() {
     chrom: parseInt(document.getElementById('gen-chrom').value) || 20,
     gen: parseInt(document.getElementById('gen-gen').value) || 4,
     mut: (parseFloat(document.getElementById('gen-mut').value) || 5) / 100.0,
-    tour: parseInt(document.getElementById('gen-tour').value) || 3
+    tour: parseInt(document.getElementById('gen-tour').value) || 3,
+    stag: parseInt(document.getElementById('gen-stag').value) || 5
   };
 }
 

@@ -75,7 +75,7 @@ def mutation(chromosome, mutation_rate=0.05):
     ]
 
 
-def genetic_search(grid, start, goal, pop_size=30, chrom_length=20, generations=4, mutation_rate=0.05, tournament_size=3):
+def genetic_search(grid, start, goal, pop_size=30, chrom_length=20, generations=4, mutation_rate=0.05, tournament_size=3, stagnation_limit=5):
     # algorithme genetique pour trouver un chemin dans la grille
     # encode un chemin comme une sequence de mouvements (gènes)
 
@@ -84,6 +84,8 @@ def genetic_search(grid, start, goal, pop_size=30, chrom_length=20, generations=
         [random.randint(0, 3) for _ in range(chrom_length)]
         for _ in range(pop_size)
     ]
+    # initialisation du compteur de stagnation
+    stagnation_counter = 0
 
     best_path = []
     best_score = float("-inf")
@@ -97,9 +99,12 @@ def genetic_search(grid, start, goal, pop_size=30, chrom_length=20, generations=
         if scores[gen_best_idx] > best_score:
             best_score = scores[gen_best_idx]
             best_path = apply_moves(grid, start, goal, population[gen_best_idx])
+            stagnation_counter = 0
+        else:
+            stagnation_counter += 1
 
-        # si on a trouve un chemin jusqu'au but on peut s'arreter
-        if best_path and best_path[-1] == goal:
+        # si on a trouve un chemin jusqu'au but et que la stagnation est superieur à atteint le taux fixé on peut s'arreter
+        if best_path and best_path[-1] == goal and stagnation_counter > stagnation_limit:
             break
 
         # creation de la nouvelle generation

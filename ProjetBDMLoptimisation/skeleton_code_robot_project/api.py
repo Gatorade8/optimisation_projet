@@ -66,7 +66,8 @@ def solve_path(
     chrom_length: int = 20,
     generations: int = 4,
     mutation_rate: float = 0.05,
-    tournament_size: int = 3
+    tournament_size: int = 3,
+    stagnation_limit: int = 5
 ):
     """Run a specific algorithm on a specific grid."""
     if algo not in ALGOS:
@@ -87,7 +88,8 @@ def solve_path(
             chrom_length=chrom_length, 
             generations=generations, 
             mutation_rate=mutation_rate, 
-            tournament_size=tournament_size
+            tournament_size=tournament_size,
+            stagnation_limit=stagnation_limit
         )
     else:
         path = algo_fn(grid, start, goal)

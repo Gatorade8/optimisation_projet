@@ -34,7 +34,7 @@ export async function fetchGrid(gridName) {
 export async function solvePath(gridName, algo, params = null) {
   let url = `${API_BASE}/solve?grid_name=${gridName}&algo=${algo}`;
   if (params && algo === 'genetic') {
-    url += `&pop_size=${params.pop}&chrom_length=${params.chrom}&generations=${params.gen}&mutation_rate=${params.mut}&tournament_size=${params.tour}`;
+    url += `&pop_size=${params.pop}&chrom_length=${params.chrom}&generations=${params.gen}&mutation_rate=${params.mut}&tournament_size=${params.tour}&stagnation_limit=${params.stag}`;
   }
   const res = await fetch(url, {
     method: 'POST',
