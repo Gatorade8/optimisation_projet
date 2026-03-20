@@ -59,7 +59,15 @@ def get_grid(grid_name: str):
     }
 
 @app.post("/solve")
-def solve_path(grid_name: str, algo: str):
+def solve_path(
+    grid_name: str, 
+    algo: str,
+    pop_size: int = 30,
+    chrom_length: int = 20,
+    generations: int = 4,
+    mutation_rate: float = 0.05,
+    tournament_size: int = 3
+):
     """Run a specific algorithm on a specific grid."""
     if algo not in ALGOS:
         raise HTTPException(status_code=400, detail="Algorithm not supported")
@@ -72,7 +80,17 @@ def solve_path(grid_name: str, algo: str):
     algo_fn = ALGOS[algo]
     
     debut = time.perf_counter()
-    path = algo_fn(grid, start, goal)
+    if algo == "genetic":
+        path = algo_fn(
+            grid, start, goal, 
+            pop_size=pop_size, 
+            chrom_length=chrom_length, 
+            generations=generations, 
+            mutation_rate=mutation_rate, 
+            tournament_size=tournament_size
+        )
+    else:
+        path = algo_fn(grid, start, goal)
     temps = time.perf_counter() - debut
     
     return {

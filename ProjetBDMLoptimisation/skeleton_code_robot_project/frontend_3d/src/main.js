@@ -246,6 +246,16 @@ const resultsDiv = document.getElementById('results');
 const resultsList = document.getElementById('results-list');
 const statusText = document.getElementById('status-text');
 
+function getGeneticParams() {
+  return {
+    pop: parseInt(document.getElementById('gen-pop').value) || 30,
+    chrom: parseInt(document.getElementById('gen-chrom').value) || 20,
+    gen: parseInt(document.getElementById('gen-gen').value) || 4,
+    mut: (parseFloat(document.getElementById('gen-mut').value) || 5) / 100.0,
+    tour: parseInt(document.getElementById('gen-tour').value) || 3
+  };
+}
+
 function setStatus(text) {
   statusText.textContent = text;
 }
@@ -299,7 +309,8 @@ algoButtons.forEach(btn => {
     setStatus(`CALCUL ${algo.toUpperCase()}...`);
     
     try {
-      const result = await solvePath(gridSelect.value, algo);
+      const params = algo === 'genetic' ? getGeneticParams() : null;
+      const result = await solvePath(gridSelect.value, algo, params);
       btn.classList.remove('running');
       
       if (result.path && result.path.length > 0) {
@@ -332,7 +343,8 @@ runAllBtn.addEventListener('click', async () => {
     const results = [];
     
     for (const algo of algos) {
-      const result = await solvePath(gridSelect.value, algo);
+      const params = algo === 'genetic' ? getGeneticParams() : null;
+      const result = await solvePath(gridSelect.value, algo, params);
       results.push(result);
     }
     

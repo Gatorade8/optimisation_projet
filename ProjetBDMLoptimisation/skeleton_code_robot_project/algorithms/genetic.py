@@ -11,12 +11,7 @@ from grid import get_neighbors
 # chaque mouvement est encode comme un entier: 0=droite, 1=gauche, 2=bas, 3=haut
 MOVES = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-# parametres de l'algo genetique
-POPULATION_SIZE = 30
-CHROMOSOME_LENGTH = 20
-GENERATIONS = 4
-MUTATION_RATE = 0.05
-TOURNAMENT_SIZE = 3
+# Les parametres de l'algo genetique par defaut sont desormais des arguments de genetic_search
 
 
 def apply_moves(grid, start, goal, chromosome):
@@ -58,9 +53,9 @@ def fitness(grid, start, goal, chromosome):
         return -dist
 
 
-def selection_tournoi(population, scores):
+def selection_tournoi(population, scores, tournament_size=3):
     # selection par tournoi: on tire un sous-ensemble et on choisit le meilleur
-    tournament = random.sample(range(len(population)), TOURNAMENT_SIZE)
+    tournament = random.sample(range(len(population)), tournament_size)
     best = max(tournament, key=lambda i: scores[i])
     return population[best]
 
@@ -72,28 +67,28 @@ def croisement(parent1, parent2):
     return enfant
 
 
-def mutation(chromosome):
+def mutation(chromosome, mutation_rate=0.05):
     # mutation: chaque gene a une chance de changer aleatoirement
     return [
-        random.randint(0, 3) if random.random() < MUTATION_RATE else gene
+        random.randint(0, 3) if random.random() < mutation_rate else gene
         for gene in chromosome
     ]
 
 
-def genetic_search(grid, start, goal):
+def genetic_search(grid, start, goal, pop_size=30, chrom_length=20, generations=4, mutation_rate=0.05, tournament_size=3):
     # algorithme genetique pour trouver un chemin dans la grille
     # encode un chemin comme une sequence de mouvements (gènes)
 
     # initialisation de la population: chromosomes aleatoires
     population = [
-        [random.randint(0, 3) for _ in range(CHROMOSOME_LENGTH)]
-        for _ in range(POPULATION_SIZE)
+        [random.randint(0, 3) for _ in range(chrom_length)]
+        for _ in range(pop_size)
     ]
 
     best_path = []
     best_score = float("-inf")
 
-    for generation in range(GENERATIONS):
+    for generation in range(generations):
         # calcule le score de chaque individu
         scores = [fitness(grid, start, goal, chrom) for chrom in population]
 
@@ -109,11 +104,11 @@ def genetic_search(grid, start, goal):
 
         # creation de la nouvelle generation
         new_population = []
-        for _ in range(POPULATION_SIZE):
-            parent1 = selection_tournoi(population, scores)
-            parent2 = selection_tournoi(population, scores)
+        for _ in range(pop_size):
+            parent1 = selection_tournoi(population, scores, tournament_size)
+            parent2 = selection_tournoi(population, scores, tournament_size)
             enfant = croisement(parent1, parent2)
-            enfant = mutation(enfant)
+            enfant = mutation(enfant, mutation_rate)
             new_population.append(enfant)
 
         population = new_population

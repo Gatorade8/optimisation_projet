@@ -28,10 +28,15 @@ export async function fetchGrid(gridName) {
  * Run a pathfinding algorithm on a grid via the Python backend.
  * @param {string} gridName - Name of the grid file
  * @param {string} algo - Algorithm key: "greedy", "astar", or "genetic"
+ * @param {object} params - Optional parameters for the genetic algorithm
  * @returns {Promise<{algo: string, path: number[][], length: number, time: number, success: boolean}>}
  */
-export async function solvePath(gridName, algo) {
-  const res = await fetch(`${API_BASE}/solve?grid_name=${gridName}&algo=${algo}`, {
+export async function solvePath(gridName, algo, params = null) {
+  let url = `${API_BASE}/solve?grid_name=${gridName}&algo=${algo}`;
+  if (params && algo === 'genetic') {
+    url += `&pop_size=${params.pop}&chrom_length=${params.chrom}&generations=${params.gen}&mutation_rate=${params.mut}&tournament_size=${params.tour}`;
+  }
+  const res = await fetch(url, {
     method: 'POST',
   });
   if (!res.ok) throw new Error(`Failed to solve: ${algo} on ${gridName}`);
